@@ -6,11 +6,30 @@ import (
 )
 
 type Message struct {
-        header  string
+        header  Header
         body    string
 }
 
-func Create (header, body string) Message {
+type Header int
+const (
+    PING Header = 0
+    GET  Header = 1
+    PUT  Header = 2
+)
+func (header Header) String() string {
+    headers := [...]string{
+                          "PING",
+                          "GET",
+                          "PUT"}
+
+    if(header < PING || header > PUT) {
+        return "UNDEFINED"
+    }
+
+    return headers[header]
+}
+
+func Create (header Header, body string) Message {
     msg := Message{header, body}
     return msg
 }
