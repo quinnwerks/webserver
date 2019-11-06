@@ -22,11 +22,14 @@ func (header Header) String() string {
                           "GET",
                           "PUT"}
 
-    if(header < PING || header > PUT) {
+    if(!header.Valid()) {
         return "UNDEFINED"
     }
 
     return headers[header]
+}
+func (header Header) Valid() bool {
+    return header >= PING && header <= PUT
 }
 
 func Create (header Header, body string) Message {

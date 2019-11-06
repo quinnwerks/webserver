@@ -10,6 +10,9 @@ func TestCreate(t *testing.T) {
 
     msg := Create(golden_header, golden_body)
 
+    if(!msg.header.Valid()) {
+        t.Error("invalid message")
+    }
     if(msg.header != golden_header) {
         t.Error("golden != result", golden_header, msg.header)
     }
@@ -23,9 +26,12 @@ func TestCreateBad(t *testing.T){
     golden_body   := "this message is bad"
 
     msg := Create(golden_header, golden_body)
-    header := msg.header.String()
+    header := msg.header
 
-    if(header != "UNDEFINED") {
+    if(header.Valid()) {
+        t.Error("valid message")
+    }
+    if(header.String() != "UNDEFINED") {
         t.Error("golden != result", golden_header, msg.header)
     }
     if(msg.body != golden_body) {
