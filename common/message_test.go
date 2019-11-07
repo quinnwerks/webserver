@@ -47,7 +47,7 @@ func TestMessageRanges(t *testing.T){
     })
 
     t.Run("HeaderHighRangeInvalid", func (t *testing.T) {
-        value := 3
+        value := 4
         BadHeaderCreate(t, value)
     })
 
@@ -60,15 +60,15 @@ func TestMessageRanges(t *testing.T){
 func TestEncodeGood(t *testing.T) {
     msg := Create(GET, "hello")
     enc_msg := string(msg.Encode());
-    golden_enc_msg := "{\"Head\":1,\"Body\":\"hello\"}"
+    golden_enc_msg := "{\"Head\":2,\"Body\":\"hello\"}"
     if(enc_msg != golden_enc_msg){
         t.Error("golden != result:", golden_enc_msg, enc_msg)
     }
 }
 
 func TestDecodeGood(t * testing.T) {
-    enc_msg := []byte("{\"Head\":1,\"Body\":\"hello\"}")
-    golden_msg := Create(GET, "hello")
+    enc_msg := []byte("{\"Head\":3,\"Body\":\"hello\"}")
+    golden_msg := Create(PUT, "hello")
     msg, valid := Decode(enc_msg)
     if(msg != golden_msg || !valid) {
         t.Error("golden != result:", golden_msg, msg)

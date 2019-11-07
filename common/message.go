@@ -2,7 +2,6 @@ package message
 
 import (
     "encoding/json"
-    "fmt"
     "log"
 )
 
@@ -13,12 +12,14 @@ type Message struct {
 
 type Header int
 const (
-    PING Header = iota
+    BAD  Header = iota
+    PING
     GET
     PUT
 )
 func (header Header) String() string {
     headers := [...]string{
+               "BAD_MESSAGE",
                "PING",
                "GET",
                "PUT"}
@@ -43,25 +44,19 @@ func Create (header Header, body string) Message {
     return msg
 }
 
-func (msg Message)String() string {
-    ret := "header:" + msg.Head.String() + "\n" +
-           "body:" +   msg.Body            + "\n"
-    return ret
-}
-
 func Decode (raw_msg []byte) (Message, bool) {
     var decoded Message
     err := json.Unmarshal(raw_msg, &decoded)
     if(err != nil) {
-        fmt.Println("todo decode")
+        return Message{BAD, ""}, false
     }
-    fmt.Println("Decoded", decoded.Head)
     return decoded, decoded.Valid()
 }
 
 func (msg Message) Encode () []byte {
     encoded, err := json.Marshal(msg)
     if(err != nil) {
+        // If encoding craps out thats really bad
         log.Fatal(err)
     }
     return encoded
