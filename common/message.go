@@ -12,15 +12,15 @@ type Message struct {
 
 type Header int
 const (
-    PING Header = 0
-    GET  Header = 1
-    PUT  Header = 2
+    PING Header = iota
+    GET
+    PUT
 )
 func (header Header) String() string {
     headers := [...]string{
-                          "PING",
-                          "GET",
-                          "PUT"}
+               "PING",
+               "GET",
+               "PUT"}
 
     if(!header.Valid()) {
         return "UNDEFINED"

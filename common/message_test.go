@@ -4,8 +4,8 @@ import (
     "testing"
 )
 
-func TestCreate(t *testing.T) {
-    golden_header :=  PING
+func GoodHeaderCreate(t *testing.T, header_int int) {
+    golden_header :=  Header(header_int)
     golden_body   := "never eat shredded wheat"
 
     msg := Create(golden_header, golden_body)
@@ -21,8 +21,8 @@ func TestCreate(t *testing.T) {
     }
 }
 
-func TestCreateBad(t *testing.T){
-    golden_header := Header(-1)
+func BadHeaderCreate(t *testing.T, header_int int){
+    golden_header := Header(header_int)
     golden_body   := "this message is bad"
 
     msg := Create(golden_header, golden_body)
@@ -32,11 +32,28 @@ func TestCreateBad(t *testing.T){
         t.Error("valid message")
     }
     if(header.String() != "UNDEFINED") {
-        t.Error("golden != result", golden_header, msg.header)
+        t.Error("golden != result", "UNDEFINED", msg.header)
     }
     if(msg.body != golden_body) {
         t.Error("golden != result:", golden_body, msg.body)
     }
 
+}
+
+func TestMessageRanges(t *testing.T){
+    t.Run("HeaderLowRangeInvalid", func (t *testing.T) {
+        value := -1
+        BadHeaderCreate(t, value)
+    })
+
+    t.Run("HeaderHighRangeInvalid", func (t *testing.T) {
+        value := 3
+        BadHeaderCreate(t, value)
+    })
+
+    t.Run("HeaderInRange", func (t * testing.T) {
+        value := 2
+        GoodHeaderCreate(t, value)
+    })
 }
 
