@@ -3,11 +3,12 @@ package message
 import (
     "encoding/json"
     "fmt"
+    "log"
 )
 
 type Message struct {
-        header  Header
-        body    string
+        Head    Header
+        Body    string
 }
 
 type Header int
@@ -28,8 +29,13 @@ func (header Header) String() string {
 
     return headers[header]
 }
+
 func (header Header) Valid() bool {
     return header >= PING && header <= PUT
+}
+
+func (msg Message) Valid() bool {
+    return msg.Head.Valid()
 }
 
 func Create (header Header, body string) Message {
@@ -37,19 +43,26 @@ func Create (header Header, body string) Message {
     return msg
 }
 
-func Decode (raw_msg []byte) Message {
-    decoded := Message{}
+func (msg Message)String() string {
+    ret := "header:" + msg.Head.String() + "\n" +
+           "body:" +   msg.Body            + "\n"
+    return ret
+}
+
+func Decode (raw_msg []byte) (Message, bool) {
+    var decoded Message
     err := json.Unmarshal(raw_msg, &decoded)
     if(err != nil) {
         fmt.Println("todo decode")
     }
-    return decoded
+    fmt.Println("Decoded", decoded.Head)
+    return decoded, decoded.Valid()
 }
 
 func (msg Message) Encode () []byte {
     encoded, err := json.Marshal(msg)
     if(err != nil) {
-        fmt.Println("todo encode")
+        log.Fatal(err)
     }
     return encoded
 }

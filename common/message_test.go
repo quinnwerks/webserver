@@ -10,14 +10,14 @@ func GoodHeaderCreate(t *testing.T, header_int int) {
 
     msg := Create(golden_header, golden_body)
 
-    if(!msg.header.Valid()) {
+    if(!msg.Head.Valid()) {
         t.Error("invalid message")
     }
-    if(msg.header != golden_header) {
-        t.Error("golden != result", golden_header, msg.header)
+    if(msg.Head != golden_header) {
+        t.Error("golden != result", golden_header, msg.Head)
     }
-    if(msg.body != golden_body) {
-        t.Error("golden != result:", golden_body, msg.body)
+    if(msg.Body != golden_body) {
+        t.Error("golden != result:", golden_body, msg.Body)
     }
 }
 
@@ -26,16 +26,16 @@ func BadHeaderCreate(t *testing.T, header_int int){
     golden_body   := "this message is bad"
 
     msg := Create(golden_header, golden_body)
-    header := msg.header
+    header := msg.Head
 
     if(header.Valid()) {
         t.Error("valid message")
     }
     if(header.String() != "UNDEFINED") {
-        t.Error("golden != result", "UNDEFINED", msg.header)
+        t.Error("golden != result", "UNDEFINED", msg.Head)
     }
-    if(msg.body != golden_body) {
-        t.Error("golden != result:", golden_body, msg.body)
+    if(msg.Body != golden_body) {
+        t.Error("golden != result:", golden_body, msg.Body)
     }
 
 }
@@ -57,3 +57,20 @@ func TestMessageRanges(t *testing.T){
     })
 }
 
+func TestEncodeGood(t *testing.T) {
+    msg := Create(GET, "hello")
+    enc_msg := string(msg.Encode());
+    golden_enc_msg := "{\"Head\":1,\"Body\":\"hello\"}"
+    if(enc_msg != golden_enc_msg){
+        t.Error("golden != result:", golden_enc_msg, enc_msg)
+    }
+}
+
+func TestDecodeGood(t * testing.T) {
+    enc_msg := []byte("{\"Head\":1,\"Body\":\"hello\"}")
+    golden_msg := Create(GET, "hello")
+    msg, valid := Decode(enc_msg)
+    if(msg != golden_msg || !valid) {
+        t.Error("golden != result:", golden_msg, msg)
+    }
+}
