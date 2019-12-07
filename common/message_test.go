@@ -2,61 +2,9 @@ package message
 
 import (
     "testing"
+    "fmt"
 )
-
-func GoodHeaderCreate(t *testing.T, header_int int) {
-    golden_header :=  Header(header_int)
-    golden_body   := "never eat shredded wheat"
-
-    msg := Create(golden_header, golden_body)
-
-    if(!msg.Head.Valid()) {
-        t.Error("invalid message")
-    }
-    if(msg.Head != golden_header) {
-        t.Error("golden != result", golden_header, msg.Head)
-    }
-    if(msg.Body != golden_body) {
-        t.Error("golden != result:", golden_body, msg.Body)
-    }
-}
-
-func BadHeaderCreate(t *testing.T, header_int int){
-    golden_header := Header(header_int)
-    golden_body   := "this message is bad"
-
-    msg := Create(golden_header, golden_body)
-    header := msg.Head
-
-    if(header.Valid()) {
-        t.Error("valid message")
-    }
-    if(header.String() != "UNDEFINED") {
-        t.Error("golden != result", "UNDEFINED", msg.Head)
-    }
-    if(msg.Body != golden_body) {
-        t.Error("golden != result:", golden_body, msg.Body)
-    }
-
-}
-
-func TestMessageRanges(t *testing.T){
-    t.Run("HeaderLowRangeInvalid", func (t *testing.T) {
-        value := -1
-        BadHeaderCreate(t, value)
-    })
-
-    t.Run("HeaderHighRangeInvalid", func (t *testing.T) {
-        value := 4
-        BadHeaderCreate(t, value)
-    })
-
-    t.Run("HeaderInRange", func (t * testing.T) {
-        value := 2
-        GoodHeaderCreate(t, value)
-    })
-}
-
+/*
 func TestEncodeGood(t *testing.T) {
     msg := Create(GET, "hello")
     enc_msg := string(msg.Encode());
@@ -73,4 +21,14 @@ func TestDecodeGood(t * testing.T) {
     if(msg != golden_msg || !valid) {
         t.Error("golden != result:", golden_msg, msg)
     }
+}
+*/
+func TestDecodePayload(t * testing.T) {
+    msg := Message{GET, Get{"blah"}}
+    byt := msg.Encode()
+    new_msg := Decode(byt)
+    fmt.Println(new_msg)
+    var get Get;
+    GetType(new_msg, &get) 
+    fmt.Println(new_msg.Body.Query)
 }

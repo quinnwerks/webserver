@@ -2,6 +2,7 @@ package message
 
 import (
     "fmt"
+    "reflect"
 )
 
 const PING_SIZE = 0
@@ -13,13 +14,30 @@ func getSizeError(p Payload) string {
 }
 
 type Payload interface {
-    getContents() []string
-    setContents([]string)
+//    getContents()
+}
+
+type PayloadPtr interface {
+    setContents(Payload)
+}
+
+func GetType(p Payload, i interface{}) {
+    type_of_payload := reflect.TypeOf(p)
+    fmt.Println(type_of_payload)
 }
 
 type Ping struct {}
 
-func (p *Ping) getContents() []string {
+type Get  struct {
+    Query string
+}
+
+type Put  struct {
+    Key   string
+    Value string
+}
+
+func (p Ping) getContents() []string {
     contents := make([]string, PING_SIZE)
     return contents
 }
@@ -29,11 +47,7 @@ func (p *Ping) setContents(s []string) {
 }
 
 
-type Get  struct {
-    Query string
-}
-
-func (g *Get) getContents() []string {
+func (g Get) getContents() []string {
     contents := make([]string, GET_SIZE)
     contents[0] = g.Query
     return contents
@@ -46,12 +60,7 @@ func (g *Get) setContents(s []string) {
     g.Query = s[0]
 }
 
-type Put  struct {
-    Key   string
-    Value string
-}
-
-func (p *Put) getContents() []string {
+func (p Put) getContents() []string {
     contents := make([]string, PUT_SIZE)
     contents[0] = p.Key
     contents[1] = p.Value

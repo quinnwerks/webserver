@@ -3,60 +3,52 @@ package message
 import (
     "encoding/json"
     "log"
+    "fmt"
 )
+
+type RawMessage struct {
+    Head Header
+    Body json.RawMessage
+}
 
 type Message struct {
         Head    Header
-        Body    string
+        Body    Payload
 }
 
-type Header int
-const (
-    BAD  Header = iota
-    PING
-    GET
-    PUT
-)
-func (header Header) String() string {
-    headers := [...]string{
-               "BAD_MESSAGE",
-               "PING",
-               "GET",
-               "PUT"}
 
-    if(!header.Valid()) {
-        return "UNDEFINED"
-    }
-
-    return headers[header]
-}
-
-func (header Header) Valid() bool {
-    return header >= PING && header <= PUT
-}
-
-func (msg Message) Valid() bool {
-    return msg.Head.Valid()
-}
-
-func Create (header Header, body string) Message {
-    msg := Message{header, body}
-    return msg
-}
-
-func Decode (raw_msg []byte) (Message, bool) {
-    var decoded Message
-    err := json.Unmarshal(raw_msg, &decoded)
+func Decode (raw_json []byte) Message {
+    var raw_msg RawMessage
+    err := json.Unmarshal(raw_json, &raw_msg)
     if(err != nil) {
-        return Message{BAD, ""}, false
+        log.Fatalln("Error:", err)
+        fmt.Println(err)
     }
-    return decoded, decoded.Valid()
+
+    var msg Message
+    var payload Payload
+    switch raw_msg.Head {
+        case PING: payload = new(Ping)
+        case GET:  payload = new(Get)
+        case PUT:  payload = new(Put)
+        default:     panic("Message not implemented")
+    }
+
+    err = json.Unmarshal(raw_msg.Body, payload)
+    if(err != nil) {
+        log.Fatalln("Error:",err)
+        fmt.Println(err)
+    }
+    msg.Head = raw_msg.Head
+    msg.Body = payload
+    return msg
 }
 
 func (msg Message) Encode () []byte {
     encoded, err := json.Marshal(msg)
     if(err != nil) {
         // If encoding craps out thats really bad
+        fmt.Println(err)
         log.Fatal(err)
     }
     return encoded
