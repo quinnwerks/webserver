@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    "log"
     "net"
 )
 
@@ -16,11 +16,31 @@ func (c *Client) SetConnection(host string, port int) {
     c.ServerPort = port
 }
 
-func main() {
-    conn, err := net.Dial("tcp", ":8080")
-    if err != nil {
-        fmt.Println("Handle dial error")
+func (c *Client) Connect() error {
+    conn_type := "tcp"
+    host := c.ServerHost
+    port := c.ServerPort
+    conn_str := host + ":" + string(port)
+    conn, err := net.Dial(conn_type, conn_str)
+    if(err != nil) {
+        log.Printf("%s", err)
+    } else {
+        c.Socket = conn
     }
 
-    fmt.Fprintf(conn, "Hello world!!!")
+    return err
+}
+
+func (c * Client) HandleConnectionError(err error) bool{
+    return false
+}
+
+func main() {
+    /*
+    conn, err := net.Dial("tcp", ":8080")
+    if err != nil {
+        log.Println("Handle dial error")
+    }
+
+    fmt.Fprintf(conn, "Hello world!!!")*/
 }

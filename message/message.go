@@ -3,7 +3,6 @@ package message
 import (
     "encoding/json"
     "log"
-    "fmt"
 )
 
 type RawMessage struct {
@@ -21,7 +20,6 @@ func Decode (raw_json []byte) Message {
     err := json.Unmarshal(raw_json, &raw_msg)
     if(err != nil) {
         log.Fatalln("Error:", err)
-        fmt.Println(err)
     }
 
     var msg Message
@@ -35,8 +33,7 @@ func Decode (raw_json []byte) Message {
 
     err = json.Unmarshal(raw_msg.Body, payload)
     if(err != nil) {
-        log.Fatalln("Error:",err)
-        fmt.Println(err)
+        log.Println("Error:",err)
     }
     msg.Head = raw_msg.Head
     msg.Body = payload
@@ -47,7 +44,6 @@ func (msg Message) Encode () []byte {
     encoded, err := json.Marshal(msg)
     if(err != nil) {
         // If encoding craps out thats really bad
-        fmt.Println(err)
         log.Fatal(err)
     }
     return encoded

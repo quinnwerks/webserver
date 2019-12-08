@@ -1,7 +1,7 @@
 package main
 
 import (
-    "testing"
+	"testing"
 )
 
 func TestSetConnection(t * testing.T) {
@@ -21,4 +21,24 @@ func TestSetConnection(t * testing.T) {
 	}
 }
 
+func AssertOnErrorMessage(t * testing.T, err string, golden_msg string) {
+	if(err != golden_msg) {
+		t.Errorf("(expected) %s != (actual) %s", golden_msg, err)
+	}
+} 
 
+func ExpectErrorConnect(t * testing.T, host string, port int, msg string) {
+	c := Client{ServerHost:"blah", ServerPort:0}
+	err := c.Connect().Error()
+	golden_err := "dial tcp: lookup " + host  + ": " + msg
+	AssertOnErrorMessage(t, err, golden_err)
+}
+
+func TestBadConnect(t * testing.T) {
+	t.Run("NoSuchHost", func (t * testing.T) {
+		host := "blah"
+		port := -1
+		msg := "no such host"
+		ExpectErrorConnect(t, host, port, msg)
+	})
+}
