@@ -3,6 +3,9 @@ package main
 import (
     "log"
     "net"
+    "fmt"
+    "time"
+    "github.com/quinnwerks/webserver/message"
 )
 
 type Client struct{
@@ -36,11 +39,19 @@ func (c * Client) HandleConnectionError(err error) bool{
 }
 
 func main() {
-    /*
+    get_msg := message.Message{message.GET, message.Get{Query:"Hello World"}}
+    byt := get_msg.Encode()
     conn, err := net.Dial("tcp", ":8080")
     if err != nil {
         log.Println("Handle dial error")
     }
-
-    fmt.Fprintf(conn, "Hello world!!!")*/
+    fmt.Println("Sending: ", string(byt))
+    conn.Write(byt)
+    byt = make([]byte, 512)
+    time.Sleep(time.Second)
+    _, err = conn.Read(byt)
+    fmt.Println(err)
+    fmt.Println("Recieving: ", string(byt))
+    conn.Close()
+    fmt.Println("Here")
 }
