@@ -12,10 +12,9 @@ type RawMessage struct {
 }
 
 type Message struct {
-        Head    Header
-        Body    Payload
+        Head Header
+        Body Payload
 }
-
 
 func Decode (raw_json []byte) Message {
     var raw_msg RawMessage
@@ -31,7 +30,7 @@ func Decode (raw_json []byte) Message {
         case PING: payload = new(Ping)
         case GET:  payload = new(Get)
         case PUT:  payload = new(Put)
-        default:     panic("Message not implemented")
+        default:   panic("Message not implemented")
     }
 
     err = json.Unmarshal(raw_msg.Body, payload)

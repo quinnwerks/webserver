@@ -2,33 +2,32 @@ package message
 
 import (
     "testing"
-    "fmt"
 )
-/*
-func TestEncodeGood(t *testing.T) {
-    msg := Create(GET, "hello")
-    enc_msg := string(msg.Encode());
-    golden_enc_msg := "{\"Head\":2,\"Body\":\"hello\"}"
-    if(enc_msg != golden_enc_msg){
-        t.Error("golden != result:", golden_enc_msg, enc_msg)
-    }
-}
-
-func TestDecodeGood(t * testing.T) {
-    enc_msg := []byte("{\"Head\":3,\"Body\":\"hello\"}")
-    golden_msg := Create(PUT, "hello")
-    msg, valid := Decode(enc_msg)
-    if(msg != golden_msg || !valid) {
-        t.Error("golden != result:", golden_msg, msg)
-    }
-}
-*/
-func TestDecodePayload(t * testing.T) {
-    msg := Message{GET, Get{"blah"}}
+func TestDecodeEncodeGet(t * testing.T) {
+    var get *Get;
+    str := "blah"
+    msg := Message{GET, Get{str}}
     byt := msg.Encode()
     new_msg := Decode(byt)
-    fmt.Println(new_msg)
-    var get Get;
-    GetType(new_msg, &get) 
-    fmt.Println(new_msg.Body.Query)
+ 
+    get = new_msg.Body.(*Get)
+    if(get.Query != str) {
+        t.Error("query != golden")
+    }
+}
+func TestDecodeEncodePut(t * testing.T) {
+    var put *Put;
+    key := "blah"
+    val := "blub"
+    msg := Message{PUT, Put{key, val}}
+    byt := msg.Encode()
+    new_msg := Decode(byt)
+ 
+    put = new_msg.Body.(*Put)
+    if(put.Key != key) {
+        t.Error("key != golden")
+    }
+    if(put.Value != val) {
+        t.Error("val != golden")
+    }
 }

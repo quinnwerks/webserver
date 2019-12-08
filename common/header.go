@@ -1,21 +1,19 @@
 package message
 
 type Header int
-const (
-    BAD  Header = iota
-    PING
+const ( 
+    PING Header = iota
     GET
     PUT
 )
 func (header Header) String() string {
     headers := [...]string{
-               "Bad",
-               "Ping",
-               "Get",
-               "Put"}
-
+               "PING",
+               "GET",
+               "PUT"}
+    
     if(!header.Valid()) {
-        return "Bad"
+        return "BAD"
     }
 
     return headers[header]

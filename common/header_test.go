@@ -14,13 +14,12 @@ func GoodHeaderCreate(t *testing.T, header_int int) {
 
 func BadHeaderCreate(t *testing.T, header_int int){
     header := Header(header_int)
-    golden_str := "Bad"
-
+    golden_str := "BAD"
     if(header.Valid()) {
         t.Error("valid message")
     }
-    if(string(header) != golden_str) {
-        t.Error("header != Bad")
+    if(header.String() != golden_str) {
+        t.Error("header != golden_str")
     }
 }
 
@@ -31,7 +30,7 @@ func TestMessageRanges(t *testing.T){
     })
 
     t.Run("HeaderHighRangeInvalid", func (t *testing.T) {
-        value := 4
+        value := 3
         BadHeaderCreate(t, value)
     })
 
