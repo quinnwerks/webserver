@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/quinnwerks/webserver/message"
 	"log"
+	"fmt"
 	"net"
 	"time"
 )
@@ -24,15 +25,46 @@ func (c *Client) Connect() error {
 	conn_type := "tcp"
 	host := c.ServerHost
 	port := c.ServerPort
-	conn_str := host + ":" + string(port)
+	conn_str := fmt.Sprintf("%s:%d", host, port)
 	conn, err := net.Dial(conn_type, conn_str)
 	if err != nil {
-		log.Printf("%s", err)
+		log.Printf("Error in making a connection:%s", err)
+		c.Socket = nil
+		c.ReadWriter = nil
 	} else {
 		c.Socket = conn
+		c.ReadWriter = bufio.NewReadWriter(bufio.NewReader(c.Socket), bufio.NewWriter(c.Socket))
 	}
 
 	return err
+}
+
+func (c *Client) Disconnect() {
+	c.Socket.Close()
+}
+
+func (c *Client) SendToServer(msg message.Message) bool {
+	byt := msg.Encode()
+	num_bytes, net_err := c.ReadWriter.Writer.WriteString(string(byt) + "\n")
+	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt)) + 1)
+	if(net_err != nil) {
+		log.Printf("Error after writer: %s", net_err)
+	}
+	io_err := c.ReadWriter.Flush()
+	if(io_err != nil) {
+		log.Printf("Error after flush: %s", io_err)
+	}
+	return true
+}
+
+func (c *Client) GetResponse() message.Message {
+	byt, io_err := c.ReadWriter.Reader.ReadBytes('\n')
+	if(io_err != nil) {
+		log.Printf("Error after read %s", io_err)
+	}
+	log.Printf("Recieving: %s", string(byt))
+	msg := message.Decode(byt)
+	return msg
 }
 
 func (c *Client) HandleConnectionError(err error) bool {
@@ -41,21 +73,11 @@ func (c *Client) HandleConnectionError(err error) bool {
 
 func main() {
 	get_msg := message.Message{Head: message.GET, Body: message.Get{Query: "Hello World"}}
-	byt := get_msg.Encode()
-	conn, err := net.Dial("tcp", ":8080")
-	if err != nil {
-		log.Println("Handle dial error")
-	}
-	log.Printf("Sending: %s", string(byt))
-
-	conn_handler := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
-	_, err = conn_handler.Writer.WriteString(string(byt) + "\n")
-	log.Printf("Error after writer: %s", err)
-	err = conn_handler.Writer.Flush()
-	log.Printf("Error after flush: %s", err)
+	c := Client{}
+	c.SetConnection("localhost", 8080)
+	c.Connect()
+	c.SendToServer(get_msg)
 	time.Sleep(time.Second)
-	byt, err = conn_handler.Reader.ReadBytes('\n')
-	log.Printf("Error after read %s", err)
-	log.Printf("Recieving: %s", string(byt))
-	conn.Close()
+	c.GetResponse()
+	c.Disconnect()
 }
