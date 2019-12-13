@@ -4,7 +4,25 @@ import (
 	"testing"
 )
 
-func TestSetConnection(t * testing.T) {
+type ConnMock struct {
+	ReadBuffer  []byte
+	WriteBuffer []byte
+	ThrowError  bool
+}
+
+func Close() error {
+	return nil
+}
+
+func Read([]byte) (int, error) {
+	return -1, nil
+}
+
+func Write([]byte) (int, error) {
+	return -1, nil
+}
+
+func TestSetConnection(t *testing.T) {
 	var c Client
 	golden_host := "localhost"
 	golden_port := 8080
@@ -12,20 +30,21 @@ func TestSetConnection(t * testing.T) {
 	host := c.ServerHost
 	port := c.ServerPort
 
-	if(host != golden_host) {
+	if host != golden_host {
 		t.Errorf("(expected) %s != (actual) %s", golden_host, host)
 	}
 
-	if(port != golden_port) {
+	if port != golden_port {
 		t.Errorf("(expected) %d != (actual) %d", golden_port, port)
 	}
 }
 
+/*
 func AssertOnErrorMessage(t * testing.T, err string, golden_msg string) {
 	if(err != golden_msg) {
 		t.Errorf("(expected) %s != (actual) %s", golden_msg, err)
 	}
-} 
+}
 
 func ExpectErrorConnect(t * testing.T, host string, port int, msg string) {
 	c := Client{ServerHost:"blah", ServerPort:0}
@@ -42,3 +61,4 @@ func TestBadConnect(t * testing.T) {
 		ExpectErrorConnect(t, host, port, msg)
 	})
 }
+*/

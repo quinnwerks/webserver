@@ -2,17 +2,23 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/quinnwerks/webserver/message"
 	"log"
-	"fmt"
 	"net"
 	"time"
 )
 
+type Socket interface {
+	Close() error
+	Read([]byte) (int, error)
+	Write([]byte) (int, error)
+}
+
 type Client struct {
 	ServerHost string
 	ServerPort int
-	Socket     net.Conn
+	Socket     Socket
 	ReadWriter *bufio.ReadWriter
 }
 
@@ -46,12 +52,12 @@ func (c *Client) Disconnect() {
 func (c *Client) SendToServer(msg message.Message) bool {
 	byt := msg.Encode()
 	num_bytes, net_err := c.ReadWriter.Writer.WriteString(string(byt) + "\n")
-	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt)) + 1)
-	if(net_err != nil) {
+	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt))+1)
+	if net_err != nil {
 		log.Printf("Error after writer: %s", net_err)
 	}
 	io_err := c.ReadWriter.Flush()
-	if(io_err != nil) {
+	if io_err != nil {
 		log.Printf("Error after flush: %s", io_err)
 	}
 	return true
@@ -59,7 +65,7 @@ func (c *Client) SendToServer(msg message.Message) bool {
 
 func (c *Client) GetResponse() message.Message {
 	byt, io_err := c.ReadWriter.Reader.ReadBytes('\n')
-	if(io_err != nil) {
+	if io_err != nil {
 		log.Printf("Error after read %s", io_err)
 	}
 	log.Printf("Recieving: %s", string(byt))
