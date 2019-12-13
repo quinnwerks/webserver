@@ -78,10 +78,6 @@ func (c *Client) GetResponse() message.Message {
 	return msg
 }
 
-func (c *Client) HandleConnectionError(err error) bool {
-	return false
-}
-
 func main() {
 	get_msg := message.Message{Head: message.GET, Body: message.Get{Query: "Hello World"}}
 	c := Client{}
