@@ -1,24 +1,29 @@
 package main
 
 import (
+	"errors"
 	"testing"
 )
 
 type ConnMock struct {
-	ReadBuffer  []byte
-	WriteBuffer []byte
-	ThrowError  bool
+	ReadBuffer *[]byte
+	ThrowError *bool
 }
 
-func Close() error {
+func (c ConnMock) Close() error {
+	if *c.ThrowError {
+		return errors.New("Dummy disconnect error")
+	} else {
+		c.ReadBuffer = nil
+	}
 	return nil
 }
 
-func Read([]byte) (int, error) {
+func (c ConnMock) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func Write([]byte) (int, error) {
+func (c ConnMock) Write([]byte) (int, error) {
 	return -1, nil
 }
 
@@ -36,6 +41,21 @@ func TestSetConnection(t *testing.T) {
 
 	if port != golden_port {
 		t.Errorf("(expected) %d != (actual) %d", golden_port, port)
+	}
+}
+
+func TestDisconnect(t *testing.T) {
+	var b bool
+	c := Client{"", -1, ConnMock{nil, &b}, nil}
+
+	b = false
+	if !c.Disconnect() {
+		t.Error("Failed disconnect unexpected")
+	}
+
+	b = true
+	if c.Disconnect() {
+		t.Error("Successful disconnect unexpected")
 	}
 }
 

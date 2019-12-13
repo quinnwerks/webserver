@@ -45,8 +45,13 @@ func (c *Client) Connect() error {
 	return err
 }
 
-func (c *Client) Disconnect() {
-	c.Socket.Close()
+func (c *Client) Disconnect() bool {
+	net_err := c.Socket.Close()
+	if net_err != nil {
+		log.Printf("Error attempting to disconnect: %s", net_err)
+		return false
+	}
+	return true
 }
 
 func (c *Client) SendToServer(msg message.Message) bool {
