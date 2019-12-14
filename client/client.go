@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+type Writer interface {
+	WriteString(string) (int, error)
+	Flush() error
+}
+
+type Reader interface {
+	ReadBytes(byte) ([]byte, error)
+}
+
 type Socket interface {
 	Close() error
 	Read([]byte) (int, error)
@@ -19,7 +28,13 @@ type Client struct {
 	ServerHost string
 	ServerPort int
 	Socket     Socket
-	ReadWriter *bufio.ReadWriter
+	Reader     Reader
+	Writer     Writer
+}
+
+func (c *Client) SetIO(socket Socket) {
+	c.Reader = bufio.NewReader(c.Socket)
+	c.Writer = bufio.NewWriter(c.Socket)
 }
 
 func (c *Client) SetConnection(host string, port int) {
@@ -36,10 +51,11 @@ func (c *Client) Connect() error {
 	if err != nil {
 		log.Printf("Error in making a connection:%s", err)
 		c.Socket = nil
-		c.ReadWriter = nil
+		c.Reader = nil
+		c.Writer = nil
 	} else {
 		c.Socket = conn
-		c.ReadWriter = bufio.NewReadWriter(bufio.NewReader(c.Socket), bufio.NewWriter(c.Socket))
+		c.SetIO(c.Socket)
 	}
 
 	return err
@@ -54,22 +70,24 @@ func (c *Client) Disconnect() bool {
 	return true
 }
 
-func (c *Client) SendToServer(msg message.Message) bool {
+func (c *Client) SendMessage(msg message.Message) bool {
 	byt := msg.Encode()
-	num_bytes, net_err := c.ReadWriter.Writer.WriteString(string(byt) + "\n")
+	num_bytes, net_err := c.Writer.WriteString(string(byt) + "\n")
 	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt))+1)
 	if net_err != nil {
 		log.Printf("Error after writer: %s", net_err)
+		return false
 	}
-	io_err := c.ReadWriter.Flush()
+	io_err := c.Writer.Flush()
 	if io_err != nil {
 		log.Printf("Error after flush: %s", io_err)
+		return false
 	}
 	return true
 }
 
 func (c *Client) GetResponse() message.Message {
-	byt, io_err := c.ReadWriter.Reader.ReadBytes('\n')
+	byt, io_err := c.Reader.ReadBytes('\n')
 	if io_err != nil {
 		log.Printf("Error after read %s", io_err)
 	}
@@ -83,7 +101,7 @@ func main() {
 	c := Client{}
 	c.SetConnection("localhost", 8080)
 	c.Connect()
-	c.SendToServer(get_msg)
+	c.SendMessage(get_msg)
 	time.Sleep(time.Second)
 	c.GetResponse()
 	c.Disconnect()

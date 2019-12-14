@@ -5,6 +5,28 @@ import (
 	"testing"
 )
 
+type WriterMock struct {
+	Buffer     *[]byte
+	ThrowError *bool
+}
+
+func (w WriterMock) WriteString(string) (int, error) {
+	return -1, nil
+}
+
+func (w WriterMock) Flush() error {
+	return nil
+}
+
+type ReaderMock struct {
+	Buffer     *[]byte
+	ThrowError *bool
+}
+
+func (r ReaderMock) ReadBytes(byte) ([]byte, error) {
+	return nil, nil
+}
+
 type ConnMock struct {
 	ReadBuffer *[]byte
 	ThrowError *bool
@@ -46,7 +68,7 @@ func TestSetConnection(t *testing.T) {
 
 func TestDisconnect(t *testing.T) {
 	var b bool
-	c := Client{"", -1, ConnMock{nil, &b}, nil}
+	c := Client{"", -1, ConnMock{nil, &b}, nil, nil}
 
 	b = false
 	if !c.Disconnect() {
@@ -57,6 +79,14 @@ func TestDisconnect(t *testing.T) {
 	if c.Disconnect() {
 		t.Error("Successful disconnect unexpected")
 	}
+}
+
+func TestSendMessage(t *testing.T) {
+
+}
+
+func TestGetResponse(t *testing.T) {
+
 }
 
 /*
