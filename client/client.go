@@ -30,6 +30,7 @@ type Client struct {
 	Socket     Socket
 	Reader     Reader
 	Writer     Writer
+	TestDial   bool
 }
 
 func (c *Client) SetIO(socket Socket) {
@@ -47,7 +48,11 @@ func (c *Client) Connect() error {
 	host := c.ServerHost
 	port := c.ServerPort
 	conn_str := fmt.Sprintf("%s:%d", host, port)
-	conn, err := net.Dial(conn_type, conn_str)
+	var conn Socket
+	var err error
+	if !c.TestDial {
+		conn, err = net.Dial(conn_type, conn_str)
+	}
 	if err != nil {
 		log.Printf("Error in making a connection:%s", err)
 		c.Socket = nil

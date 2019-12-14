@@ -24,8 +24,8 @@ func TestSetConnection(t *testing.T) {
 }
 
 func TestDisconnect(t *testing.T) {
-	var should_flush, io_err, flush_err, net_err bool
-	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
+	var should_flush, io_err, flush_err, net_err, test_dial bool
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err, test_dial)
 
 	net_err = false
 	if !c.Disconnect() {
@@ -38,7 +38,7 @@ func TestDisconnect(t *testing.T) {
 	}
 }
 
-func MakeClientForTests(should_flush, io_err, flush_err, net_err *bool) Client {
+func MakeClientForTests(should_flush, io_err, flush_err, net_err *bool, test_dial bool) Client {
 	buff    := make([]byte,0)
 	conn   := test_common.ConnMock{Buffer:&buff,
 					               ThrowError:net_err}
@@ -51,23 +51,24 @@ func MakeClientForTests(should_flush, io_err, flush_err, net_err *bool) Client {
 						  ThrowIOErr:io_err}
 
 	client := Client{ServerHost:"", 
-				     ServerPort:-1, 
+				     ServerPort:8080, 
 				     Socket:conn, 
 				     Reader:reader, 
-					 Writer:writer}
+					 Writer:writer,
+					 TestDial:test_dial}
 					 
 	return client
 }
 
 func TestSendMessage(t *testing.T) {
-	var should_flush, io_err, flush_err, net_err bool
+	var should_flush, io_err, flush_err, net_err, test_dial bool
 	get_msg := message.Message{
 								Head: message.GET, 
 								Body: 
 								message.Get {
 								Query: "Hello World"}}
 	golden_buff := append(get_msg.Encode(), '\n')
-	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err, test_dial)
 	c.SendMessage(get_msg)
 	buff,_ := c.Reader.ReadBytes(' ')	
 
@@ -90,13 +91,13 @@ func TestSendMessage(t *testing.T) {
 }
 
 func TestGetResponse(t *testing.T) {
-	var should_flush, io_err, flush_err, net_err bool
+	var should_flush, io_err, flush_err, net_err, test_dial bool
 	get_msg := message.Message{
 		Head: message.GET, 
 		Body: 
 		message.Get {
 		Query: "Hello World"}}
-	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err, test_dial)
 	c.Writer.WriteString(string(get_msg.Encode()) + "\n")
 	rsp,_ := c.GetResponse()
 
@@ -112,6 +113,16 @@ func TestGetResponse(t *testing.T) {
 
 }
 
+func TestConnect(t *testing.T) {
+	var should_flush, io_err, flush_err, net_err, test_dial bool
+	test_dial = false
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err, test_dial)
+	c.Connect()
+	
+	test_dial = true
+	c = MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err, test_dial)
+	c.Connect()
+}
 /*
 func AssertOnErrorMessage(t * testing.T, err string, golden_msg string) {
 	if(err != golden_msg) {
