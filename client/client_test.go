@@ -1,73 +1,10 @@
 package main
 
 import (
-	"errors"
 	"testing"
 	"github.com/quinnwerks/webserver/message"
+	"github.com/quinnwerks/webserver/test_common"
 )
-
-type WriterMock struct {
-	Conn          *ConnMock
-	ThrowIOErr    *bool
-	ThrowFlushErr *bool
-	ShouldFlush   *bool
-}
-
-func (w WriterMock) WriteString(s string) (int, error) {
-	if *w.ThrowIOErr {
-		return -1, errors.New("Dummy write string error")
-	}
-	return w.Conn.Write([]byte(s))
-}
-
-func (w WriterMock) Flush() error {
-	if *w.ThrowFlushErr {
-		return errors.New("Dummy flush error")
-	}
-	if *w.ShouldFlush {
-		*w.Conn.Buffer = (*w.Conn.Buffer)[:0]
-	}
-	return nil
-}
-
-type ReaderMock struct {
-	Conn         *ConnMock
-	ThrowIOErr   *bool
-}
-
-func (r ReaderMock) ReadBytes(byte) ([]byte, error) {
-	if *r.ThrowIOErr {
-		return nil, errors.New("Dummy io error")
-	}
-	return *r.Conn.Buffer, nil
-}
-
-type ConnMock struct {
-	Buffer *[]byte
-	ThrowError *bool
-}
-
-func (c ConnMock) Close() error {
-	if *c.ThrowError {
-		return errors.New("Dummy disconnect error")
-	} else {
-		c.Buffer = nil
-	}
-	return nil
-}
-
-func (c ConnMock) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (c ConnMock) Write(b []byte) (int, error) {
-	num_bytes := 0
-	for _, char := range b {
-		*c.Buffer = append(*c.Buffer, char)
-		num_bytes++;
-	}
-	return num_bytes, nil
-}
 
 func TestSetConnection(t *testing.T) {
 	var c Client
@@ -87,34 +24,30 @@ func TestSetConnection(t *testing.T) {
 }
 
 func TestDisconnect(t *testing.T) {
-	var throw_err bool
-	c := Client{"", 
-				-1, 
-				ConnMock{nil, &throw_err}, 
-				nil, 
-				nil}
+	var should_flush, io_err, flush_err, net_err bool
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
 
-	throw_err = false
+	net_err = false
 	if !c.Disconnect() {
 		t.Error("Failed disconnect unexpected")
 	}
 
-	throw_err = true
+	net_err = true
 	if c.Disconnect() {
 		t.Error("Successful disconnect unexpected")
 	}
 }
 
-func MakeClientForTests(should_flush, io_err, flush_err *bool) Client {
+func MakeClientForTests(should_flush, io_err, flush_err, net_err *bool) Client {
 	buff    := make([]byte,0)
-	conn   := ConnMock{Buffer:&buff,
-					   ThrowError:nil}
-	writer := WriterMock {Conn:&conn,
+	conn   := test_common.ConnMock{Buffer:&buff,
+					               ThrowError:net_err}
+	writer := test_common.WriterMock {Conn:&conn,
 					      ThrowIOErr:io_err,
 					      ThrowFlushErr:flush_err,
 						  ShouldFlush:should_flush}
 	
-	reader := ReaderMock {Conn:&conn,
+	reader := test_common.ReaderMock {Conn:&conn,
 						  ThrowIOErr:io_err}
 
 	client := Client{ServerHost:"", 
@@ -127,14 +60,14 @@ func MakeClientForTests(should_flush, io_err, flush_err *bool) Client {
 }
 
 func TestSendMessage(t *testing.T) {
-	var should_flush, io_err, flush_err bool
+	var should_flush, io_err, flush_err, net_err bool
 	get_msg := message.Message{
 								Head: message.GET, 
 								Body: 
 								message.Get {
 								Query: "Hello World"}}
 	golden_buff := append(get_msg.Encode(), '\n')
-	c := MakeClientForTests(&should_flush, &io_err, &flush_err)
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
 	c.SendMessage(get_msg)
 	buff,_ := c.Reader.ReadBytes(' ')	
 
@@ -157,13 +90,13 @@ func TestSendMessage(t *testing.T) {
 }
 
 func TestGetResponse(t *testing.T) {
-	var should_flush, io_err, flush_err bool
+	var should_flush, io_err, flush_err, net_err bool
 	get_msg := message.Message{
 		Head: message.GET, 
 		Body: 
 		message.Get {
 		Query: "Hello World"}}
-	c := MakeClientForTests(&should_flush, &io_err, &flush_err)
+	c := MakeClientForTests(&should_flush, &io_err, &flush_err, &net_err)
 	c.Writer.WriteString(string(get_msg.Encode()) + "\n")
 	rsp,_ := c.GetResponse()
 
