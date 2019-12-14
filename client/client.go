@@ -86,14 +86,16 @@ func (c *Client) SendMessage(msg message.Message) bool {
 	return true
 }
 
-func (c *Client) GetResponse() message.Message {
+func (c *Client) GetResponse() (message.Message, bool) {
 	byt, io_err := c.Reader.ReadBytes('\n')
 	if io_err != nil {
 		log.Printf("Error after read %s", io_err)
+		return message.Message{},false
+	} else {
+		log.Printf("Recieving: %s", string(byt))
+		msg := message.Decode(byt)
+		return msg, true
 	}
-	log.Printf("Recieving: %s", string(byt))
-	msg := message.Decode(byt)
-	return msg
 }
 
 func main() {
