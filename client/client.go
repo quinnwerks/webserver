@@ -78,7 +78,6 @@ func (c *Client) Disconnect() bool {
 func (c *Client) SendMessage(msg message.Message) bool {
 	byt := msg.Encode()
 	num_bytes, net_err := c.Writer.WriteString(string(byt) + "\n")
-	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt))+1)
 	if net_err != nil {
 		log.Printf("Error after writer: %s", net_err)
 		return false
@@ -88,6 +87,7 @@ func (c *Client) SendMessage(msg message.Message) bool {
 		log.Printf("Error after flush: %s", io_err)
 		return false
 	}
+	log.Printf("Sent %d Bytes. Original message + newline was %d Bytes.", num_bytes, len(string(byt))+1)
 	return true
 }
 
