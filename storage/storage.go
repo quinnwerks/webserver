@@ -13,7 +13,7 @@ type Storage interface {
 // StorageNode is the Storage types representation of data.
 type StorageNode interface {
 	// Gets the hash of the storage nodes key.
-	GetHash() string
+	Hash() string
 	// Returns the size of the node in bytes.
-	GetSize() int
+	Size() int
 }

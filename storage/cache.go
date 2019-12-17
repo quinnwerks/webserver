@@ -21,3 +21,20 @@ func (c *Cache) Get() {
 
 type policy interface {
 }
+
+type cacheNode struct {
+	key   string
+	value string
+}
+
+func newCacheNode(key string, value string) *cacheNode {
+	return &cacheNode{key: key, value: value}
+}
+
+func (node *cacheNode) Size() int {
+	return len(node.key) + len(node.value)
+}
+
+func (node *cacheNode) Hash() string {
+	return ""
+}
