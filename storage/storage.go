@@ -1,8 +1,8 @@
-package server
+package storage
 
 // Storage is an interface which can be used to store and
 // retrieve data from disk or memory using a NoSQL convention.
-// Storage interfaces should be thread safe at the interface level.
+// Storage interfaces public functions will be thread safe.
 type Storage interface {
 	// Put a value into storage
 	Put(key string, value string) error
@@ -12,6 +12,8 @@ type Storage interface {
 
 // StorageNode is the Storage types representation of data.
 type StorageNode interface {
-	GetHash() int
+	// Gets the hash of the storage nodes key.
+	GetHash() string
+	// Returns the size of the node in bytes.
 	GetSize() int
 }
