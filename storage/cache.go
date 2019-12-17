@@ -1,6 +1,8 @@
 package storage
 
-import ()
+import (
+	"log"
+)
 
 // Cache is a struct which implements the storage interface.
 // A cache in this case stores data in memory.
@@ -23,11 +25,14 @@ type policy interface {
 }
 
 type cacheNode struct {
-	key   string
-	value string
+	key          string
+	value        string
+	hash         string
+	hashComputed bool
 }
 
 func newCacheNode(key string, value string) *cacheNode {
+
 	return &cacheNode{key: key, value: value}
 }
 
@@ -35,6 +40,10 @@ func (node *cacheNode) Size() int {
 	return len(node.key) + len(node.value)
 }
 
+//TODO: actually compute this
 func (node *cacheNode) Hash() string {
-	return ""
+	if !node.hashComputed {
+		log.Fatal("Hash has not been computed.")
+	}
+	return node.hash
 }
