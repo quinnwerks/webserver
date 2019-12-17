@@ -7,7 +7,7 @@ import (
 )
 
 func TestSetConnection(t *testing.T) {
-	var c Client
+    var c Client
 	golden_host := "localhost"
 	golden_port := 8080
 	c.SetConnection(golden_host, golden_port)
